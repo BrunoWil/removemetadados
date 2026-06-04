@@ -1,0 +1,5 @@
+/target
+/src
+Cargo.lock
+Cargo.toml
+wasm_base64.txt
