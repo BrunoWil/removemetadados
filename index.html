@@ -3,47 +3,126 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Remover Metadados</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
         :root {
             --primary: #4f46e5;
-            --bg: #f8fafc;
+            --primary-hover: #4338ca;
+            --bg: #f1f5f9;
             --card: #ffffff;
-            --text: #1e293b;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #cbd5e1;
+            --border-hover: #94a3b8;
+            --success: #10b981;
+            --success-hover: #059669;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
             background-color: var(--bg);
-            color: var(--text);
+            color: var(--text-main);
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 1.5rem;
         }
 
         .container {
             background: var(--card);
-            padding: 2.5rem;
-            border-radius: 16px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            padding: 2.5rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
             text-align: center;
-            width: 90%;
-            max-width: 400px;
+            width: 100%;
+            max-width: 440px;
+        }
+
+        .header svg {
+            width: 48px;
+            height: 48px;
+            color: var(--primary);
+            margin-bottom: 1rem;
         }
 
         h1 {
             font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+            color: var(--text-main);
+            letter-spacing: -0.025em;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin: 0 0 2rem 0;
+            line-height: 1.5;
+        }
+
+        .dropzone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem 1.5rem;
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            background-color: #f8fafc;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .dropzone:hover, .dropzone.dragover {
+            border-color: var(--primary);
+            background-color: #eef2ff;
+        }
+
+        .dropzone svg {
+            width: 36px;
+            height: 36px;
+            color: var(--text-muted);
             margin-bottom: 1rem;
+            transition: color 0.2s ease;
+        }
+
+        .dropzone:hover svg, .dropzone.dragover svg {
+            color: var(--primary);
+        }
+
+        .dropzone-text {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .file-name {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            word-break: break-all;
+            max-width: 100%;
+            transition: color 0.2s ease;
         }
 
         input[type="file"] {
-            margin: 1.5rem 0;
-            padding: 12px;
-            border: 1px dashed #cbd5e1;
-            border-radius: 8px;
+            position: absolute;
             width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
             cursor: pointer;
         }
 
@@ -51,34 +130,110 @@
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 0.875rem 1.5rem;
+            border-radius: 10px;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             width: 100%;
-            transition: 0.2s;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
-        button:hover {
-            background-color: #4338ca;
+        button:hover:not(:disabled) {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 8px -1px rgba(79, 70, 229, 0.3);
         }
 
-        #download {
-            display: block;
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background-color: var(--border-hover);
+            cursor: not-allowed;
+            box-shadow: none;
+            opacity: 0.7;
+        }
+
+        #download-container {
             margin-top: 1.5rem;
-            color: var(--primary);
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background-color: var(--success);
+            color: white;
+            text-decoration: none;
+            padding: 0.875rem 1.5rem;
+            border-radius: 10px;
+            font-size: 1rem;
             font-weight: bold;
+            width: 100%;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+        }
+
+        .download-btn:hover {
+            background-color: var(--success-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 8px -1px rgba(16, 185, 129, 0.3);
+        }
+        
+        .download-btn svg {
+            width: 20px;
+            height: 20px;
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1>Privacidade de Arquivos</h1>
-        <p>Seus dados permanecem apenas no seu navegador.</p>
-        <input type="file" id="upload" accept="image/jpeg,image/png">
-        <button id="process">Limpar e Baixar</button>
-        <a id="download" style="display:none">Clique para baixar</a>
+        <div class="header">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+            <h1>Privacidade de Arquivos</h1>
+            <p class="subtitle">Limpe os metadados das suas imagens. Seus dados não saem do seu navegador.</p>
+        </div>
+
+        <label class="dropzone" id="dropzone" for="upload">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+            <span class="dropzone-text">Selecione ou arraste sua imagem</span>
+            <span class="file-name" id="file-name">Nenhum arquivo selecionado</span>
+            <input type="file" id="upload" accept="image/jpeg,image/png">
+        </label>
+
+        <button id="process" disabled>
+            <svg style="width: 20px; height: 20px; display: none;" id="btn-spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <span id="btn-text">Limpar e Baixar</span>
+        </button>
+        
+        <div id="download-container">
+            <a id="download" class="download-btn">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                Baixar Imagem Limpa
+            </a>
+        </div>
     </div>
 
     <script>
@@ -154,18 +309,59 @@
             }
         }
 
+        const fileInput = document.getElementById('upload');
+        const fileNameDisplay = document.getElementById('file-name');
+        const processBtn = document.getElementById('process');
+        const dropzone = document.getElementById('dropzone');
+        const downloadContainer = document.getElementById('download-container');
+        const btnSpinner = document.getElementById('btn-spinner');
+        const btnText = document.getElementById('btn-text');
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                fileNameDisplay.textContent = file.name;
+                fileNameDisplay.style.color = 'var(--primary)';
+                processBtn.disabled = false;
+            } else {
+                fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
+                fileNameDisplay.style.color = 'var(--text-muted)';
+                processBtn.disabled = true;
+            }
+            downloadContainer.style.display = 'none';
+        });
+
+        // Efeitos de Drag and Drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); }, false);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, () => dropzone.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, () => dropzone.classList.remove('dragover'), false);
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            let dt = e.dataTransfer;
+            let files = dt.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                fileInput.dispatchEvent(new Event('change'));
+            }
+        });
+
         // 6. Evento de clique no botão
         document.getElementById('process').onclick = async () => {
-            const btn = document.getElementById('process');
-            const file = document.getElementById('upload').files[0];
+            const file = fileInput.files[0];
+            if (!file) return;
 
-            if (!file) {
-                alert("Selecione uma imagem.");
-                return;
-            }
-
-            btn.innerText = "Processando...";
-            btn.disabled = true;
+            processBtn.disabled = true;
+            btnText.innerText = "Processando...";
+            btnSpinner.style.display = "block";
+            btnSpinner.style.animation = "spin 1s linear infinite";
 
             try {
                 // Prepara o WebAssembly
@@ -180,14 +376,15 @@
                 const link = document.getElementById('download');
                 link.href = URL.createObjectURL(blob);
                 link.download = 'limpo_' + file.name;
-                link.style.display = 'block';
-                link.innerText = "Download concluído!";
+                downloadContainer.style.display = 'block';
             } catch (err) {
                 console.error(err);
                 alert("Erro ao processar imagem. Verifique o console.");
             } finally {
-                btn.innerText = "Limpar e Baixar";
-                btn.disabled = false;
+                btnText.innerText = "Limpar e Baixar";
+                btnSpinner.style.display = "none";
+                btnSpinner.style.animation = "none";
+                processBtn.disabled = false;
             }
         };
     </script>
