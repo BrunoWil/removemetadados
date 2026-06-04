@@ -34,7 +34,7 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            padding: 1.5rem;
+            padding: 5rem 1.5rem 1.5rem;
         }
 
         .container {
@@ -205,10 +205,71 @@
             width: 20px;
             height: 20px;
         }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--card);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            z-index: 1000;
+        }
+
+        .navbar .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            letter-spacing: -0.025em;
+        }
+
+        .navbar .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .navbar .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
+        }
+
+        .navbar .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 1rem;
+            }
+            .navbar .nav-links {
+                gap: 1rem;
+            }
+            .navbar .nav-links a {
+                font-size: 0.85rem;
+            }
+        }
     </style>
 </head>
 
 <body>
+    <nav class="navbar">
+        <a href="https://brunowil.github.io/portifolio/" class="logo nav-scroll">Bruno.</a>
+        <div class="nav-links">
+            <a href="https://brunowil.github.io/portifolio/#inicio" class="nav-scroll">Início</a>
+            <a href="https://brunowil.github.io/portifolio/#projetos" class="nav-scroll">Projetos</a>
+            <a href="https://brunowil.github.io/portifolio/#contato" class="nav-scroll">Contato</a>
+        </div>
+    </nav>
+
     <div class="container">
         <div class="header">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
