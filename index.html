@@ -345,6 +345,19 @@
 
         await init();
 
+        document.getElementById('upload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const btn = document.getElementById('process');
+            const fileName = document.getElementById('file-name');
+
+            if (file) {
+                fileName.textContent = file.name;
+                btn.disabled = false;
+            } else {
+                fileName.textContent = 'Nenhum arquivo selecionado';
+                btn.disabled = true;
+            }
+        });
         const ffmpeg = new FFmpeg();
         let ffmpegLoaded = false;
 
