@@ -358,25 +358,20 @@
                 btn.disabled = true;
             }
         });
+
+
         const ffmpeg = new FFmpeg();
         let ffmpegLoaded = false;
 
         async function loadFFmpeg() {
             if (!ffmpegLoaded) {
-                const coreURL = await toBlobURL(
-                    'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm/ffmpeg-core.js',
-                    'text/javascript'
-                );
-                const wasmURL = await toBlobURL(
-                    'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm/ffmpeg-core.wasm',
-                    'application/wasm'
-                );
-                const workerURL = await toBlobURL(
-                    'https://unpkg.com/@ffmpeg/ffmpeg@0.12.7/dist/esm/worker.js',
-                    'text/javascript'
-                );
+                const baseURL = 'https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/esm';
 
-                await ffmpeg.load({ coreURL, wasmURL, workerURL });
+                await ffmpeg.load({
+                    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+                    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+                    workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
+                });
                 ffmpegLoaded = true;
             }
         }
