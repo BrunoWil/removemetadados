@@ -337,13 +337,21 @@
         </div>
     </div>
     <script>
-        // Versão sem módulo ES e sem Worker — compatível com GitHub Pages
-        const CORE_URL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js';
+        // Registra o service worker que injeta COOP/COEP
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./coi-serviceworker.js').then((reg) => {
+                // Se acabou de instalar, recarrega para ativar os headers
+                if (!navigator.serviceWorker.controller) {
+                    window.location.reload();
+                }
+            });
+        }
 
         let ffmpeg = null;
 
         async function loadFFmpeg() {
             if (ffmpeg) return;
+
             await new Promise((resolve, reject) => {
                 const script = document.createElement('script');
                 script.src = 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js';
@@ -351,10 +359,12 @@
                 script.onerror = reject;
                 document.head.appendChild(script);
             });
+
             ffmpeg = FFmpeg.createFFmpeg({
-                corePath: CORE_URL,
+                corePath: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
                 log: true
             });
+
             await ffmpeg.load();
         }
 
@@ -383,7 +393,6 @@
                 let blob;
 
                 if (file.type.startsWith('image/')) {
-                    // Remove metadados de imagem reescrevendo o arquivo
                     btnText.innerText = "Processando imagem...";
                     blob = await stripImageMetadata(file);
 
