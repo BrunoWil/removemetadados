@@ -360,6 +360,13 @@
         const ffmpeg = new FFmpeg();
         let ffmpegLoaded = false;
 
+        // Listener para exibir o progresso do processamento de vídeo em tempo real
+        ffmpeg.on('progress', ({ progress }) => {
+            if (progress >= 0 && progress <= 1) {
+                btnText.innerText = `Processando vídeo (${Math.round(progress * 100)}%)`;
+            }
+        });
+
         async function loadFFmpeg() {
             if (!ffmpegLoaded) {
                 await ffmpeg.load({
@@ -422,6 +429,10 @@
                     await ffmpeg.exec(['-i', file.name, '-map_metadata', '-1', '-c', 'copy', 'limpo_' + file.name]);
                     
                     result = await ffmpeg.readFile('limpo_' + file.name);
+
+                    // Limpa os arquivos da memória virtual do WASM para evitar travamento do navegador
+                    await ffmpeg.deleteFile(file.name);
+                    await ffmpeg.deleteFile('limpo_' + file.name);
                 } else {
                     throw new Error("Formato não suportado");
                 }
