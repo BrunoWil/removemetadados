@@ -338,10 +338,11 @@
     </div>
     <script type="module">
         import init, { strip_metadata } from './pkg/removemetadados.js';
-        import { FFmpeg } from './ffmpeg/index.js';
-        import { fetchFile, toBlobURL } from './ffmpeg/util.js';
 
-        // Inicializa o WASM do projeto
+        // Importação via CDN para evitar o erro de 404 de arquivos internos (const.js, etc.)
+        import { FFmpeg } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.7/+esm';
+        import { fetchFile, toBlobURL } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/+esm';
+
         await init();
 
         const ffmpeg = new FFmpeg();
@@ -349,16 +350,15 @@
 
         async function loadFFmpeg() {
             if (!ffmpegLoaded) {
-                const baseURL = './ffmpeg';
+                const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
                 await ffmpeg.load({
                     coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
                     wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-                    workerURL: await toBlobURL(`${baseURL}/worker.js`, 'text/javascript')
+                    workerURL: await toBlobURL('https://unpkg.com/@ffmpeg/ffmpeg@0.12.7/dist/esm/worker.js', 'text/javascript')
                 });
                 ffmpegLoaded = true;
             }
         }
-
         // Lógica do botão
         document.getElementById('process').onclick = async () => {
             const file = document.getElementById('upload').files[0];
