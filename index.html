@@ -346,7 +346,7 @@
             if (ffmpeg) return;
             await new Promise((resolve, reject) => {
                 const script = document.createElement('script');
-                script.src = 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js';
+                script.src = 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js';
                 script.onload = resolve;
                 script.onerror = reject;
                 document.head.appendChild(script);
