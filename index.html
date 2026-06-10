@@ -337,125 +337,58 @@
         </div>
     </div>
     <script type="module">
-        // Importa a função de inicialização e a função lógica do Rust
         import init, { strip_metadata } from './pkg/removemetadados.js';
-        import { FFmpeg } from 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.7/dist/esm/index.js';
-        import { fetchFile, toBlobURL } from 'https://unpkg.com/@ffmpeg/util@0.12.1/dist/esm/index.js';
+        import { FFmpeg } from './ffmpeg/index.js';
+        import { fetchFile, toBlobURL } from './ffmpeg/util.js';
 
-        // 1. Inicializa o WASM assim que a página carregar
-        async function run() {
-            await init();
-            console.log("WebAssembly inicializado.");
-        }
-        run();
-
-        const fileInput = document.getElementById('upload');
-        const fileNameDisplay = document.getElementById('file-name');
-        const processBtn = document.getElementById('process');
-        const dropzone = document.getElementById('dropzone');
-        const downloadContainer = document.getElementById('download-container');
-        const btnSpinner = document.getElementById('btn-spinner');
-        const btnText = document.getElementById('btn-text');
+        // Inicializa o WASM do projeto
+        await init();
 
         const ffmpeg = new FFmpeg();
         let ffmpegLoaded = false;
 
-        // Listener para exibir o progresso do processamento de vídeo em tempo real
-        ffmpeg.on('progress', ({ progress }) => {
-            if (progress >= 0 && progress <= 1) {
-                btnText.innerText = `Processando vídeo (${Math.round(progress * 100)}%)`;
-            }
-        });
-
         async function loadFFmpeg() {
             if (!ffmpegLoaded) {
-                const coreURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
-                const ffmpegURL = 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.7/dist/esm';
-                
+                const baseURL = './ffmpeg';
                 await ffmpeg.load({
-                    coreURL: await toBlobURL(`${coreURL}/ffmpeg-core.js`, 'text/javascript'),
-                    wasmURL: await toBlobURL(`${coreURL}/ffmpeg-core.wasm`, 'application/wasm'),
-                    classWorkerURL: await toBlobURL(`${ffmpegURL}/worker.js`, 'text/javascript')
+                    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+                    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+                    workerURL: await toBlobURL(`${baseURL}/worker.js`, 'text/javascript')
                 });
                 ffmpegLoaded = true;
             }
         }
 
-        // 2. Lógica de seleção de arquivo via clique ou drag and drop
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                fileNameDisplay.textContent = file.name;
-                fileNameDisplay.style.color = 'var(--primary)';
-                processBtn.disabled = false;
-            }
-            downloadContainer.style.display = 'none';
-        });
-
-        // Efeitos visuais de Drag and Drop
-        ['dragenter', 'dragover'].forEach(name => dropzone.addEventListener(name, () => dropzone.classList.add('dragover')));
-        ['dragleave', 'drop'].forEach(name => dropzone.addEventListener(name, () => dropzone.classList.remove('dragover')));
-
-        dropzone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            if (e.dataTransfer.files.length > 0) {
-                fileInput.files = e.dataTransfer.files;
-                fileInput.dispatchEvent(new Event('change'));
-            }
-        });
-
-        // 3. Processamento do arquivo
-        processBtn.onclick = async () => {
-            const file = fileInput.files[0];
+        // Lógica do botão
+        document.getElementById('process').onclick = async () => {
+            const file = document.getElementById('upload').files[0];
             if (!file) return;
 
-            // UI: Feedback de processamento
-            processBtn.disabled = true;
+            const btnText = document.getElementById('btn-text');
             btnText.innerText = "Processando...";
-            btnSpinner.style.display = "block";
 
             try {
                 let result;
-
                 if (file.type.startsWith('image/')) {
-                    // Lê o arquivo como ArrayBuffer
                     const arrayBuffer = await file.arrayBuffer();
-                    // Chama a função Rust importada do WASM
                     result = strip_metadata(new Uint8Array(arrayBuffer));
                 } else if (file.type.startsWith('video/')) {
-                    btnText.innerText = "Carregando motor de vídeo...";
                     await loadFFmpeg();
-                    
-                    btnText.innerText = "Processando vídeo...";
-                    await ffmpeg.writeFile(file.name, await fetchFile(file));
-                    
-                    // Remove os metadados globais. Copia fluxos sem recodificação para maior velocidade.
-                    await ffmpeg.exec(['-i', file.name, '-map_metadata', '-1', '-c', 'copy', 'limpo_' + file.name]);
-                    
-                    result = await ffmpeg.readFile('limpo_' + file.name);
-
-                    // Limpa os arquivos da memória virtual do WASM para evitar travamento do navegador
-                    await ffmpeg.deleteFile(file.name);
-                    await ffmpeg.deleteFile('limpo_' + file.name);
-                } else {
-                    throw new Error("Formato não suportado");
+                    await ffmpeg.writeFile('input', await fetchFile(file));
+                    // -map_metadata -1 remove os metadados
+                    await ffmpeg.exec(['-i', 'input', '-map_metadata', '-1', '-c', 'copy', 'output.mp4']);
+                    result = await ffmpeg.readFile('output.mp4');
                 }
 
-                // Cria o arquivo limpo para download
                 const blob = new Blob([result], { type: file.type });
                 const link = document.getElementById('download');
                 link.href = URL.createObjectURL(blob);
                 link.download = 'limpo_' + file.name;
-
-                downloadContainer.style.display = 'block';
+                document.getElementById('download-container').style.display = 'block';
             } catch (err) {
-                console.error("Erro no processamento:", err);
-                alert("Erro ao remover metadados. O arquivo pode ser inválido ou formato não suportado.");
+                alert("Erro no processamento.");
             } finally {
-                // Reset do botão
                 btnText.innerText = "Limpar e Baixar";
-                btnSpinner.style.display = "none";
-                processBtn.disabled = false;
             }
         };
     </script>
