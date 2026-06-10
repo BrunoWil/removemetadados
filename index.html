@@ -378,30 +378,50 @@
             if (!file) return;
 
             const btnText = document.getElementById('btn-text');
-            btnText.innerText = "Processando...";
+            const spinner = document.getElementById('btn-spinner');
+            btnText.innerText = "Carregando FFmpeg...";
+            spinner.style.display = 'inline';
 
             try {
                 let result;
+
                 if (file.type.startsWith('image/')) {
                     const arrayBuffer = await file.arrayBuffer();
                     result = strip_metadata(new Uint8Array(arrayBuffer));
+
                 } else if (file.type.startsWith('video/')) {
+                    console.log("Carregando FFmpeg...");
                     await loadFFmpeg();
-                    await ffmpeg.writeFile('input', await fetchFile(file));
-                    // -map_metadata -1 remove os metadados
+                    console.log("FFmpeg carregado!");
+
+                    btnText.innerText = "Processando vídeo...";
+
+                    const inputData = await fetchFile(file);
+                    console.log("Arquivo lido:", inputData.length, "bytes");
+
+                    await ffmpeg.writeFile('input', inputData);
+                    console.log("Arquivo escrito no FFmpeg");
+
                     await ffmpeg.exec(['-i', 'input', '-map_metadata', '-1', '-c', 'copy', 'output.mp4']);
+                    console.log("FFmpeg executou!");
+
                     result = await ffmpeg.readFile('output.mp4');
+                    console.log("Resultado lido:", result.length, "bytes");
                 }
 
                 const blob = new Blob([result], { type: file.type });
+                const url = URL.createObjectURL(blob);
                 const link = document.getElementById('download');
-                link.href = URL.createObjectURL(blob);
+                link.href = url;
                 link.download = 'limpo_' + file.name;
                 document.getElementById('download-container').style.display = 'block';
+
             } catch (err) {
-                alert("Erro no processamento.");
+                console.error("Erro detalhado:", err);
+                alert("Erro: " + err.message);
             } finally {
                 btnText.innerText = "Limpar e Baixar";
+                spinner.style.display = 'none';
             }
         };
     </script>
